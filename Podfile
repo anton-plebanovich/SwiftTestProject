@@ -1,1 +1,3 @@
-pod 'AFNetworking', '~> 3.0'
+use_frameworks!
+
+pod 'SDCAlertView', '~> 3.0'
