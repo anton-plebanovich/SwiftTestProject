@@ -47,8 +47,8 @@ extension ViewController {
         if let userInfo = notification.userInfo {
             if let newLocation = userInfo[LocationHelperNewLocationNotificationUserInfoKey] {
                 locationsArray.addObject(newLocation)
+                tableView.insertRowsAtIndexPaths([NSIndexPath(forRow: locationsArray.count - 1, inSection: 0)], withRowAnimation: .Automatic)
                 
-                tableView.reloadData()
                 scrollToBottom(animated: true)
             }
         }

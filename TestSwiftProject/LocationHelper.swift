@@ -10,19 +10,19 @@ import UIKit
 import CoreLocation
 import SDCAlertView
 
-let LocationHelperStatusChangedNotification = "LocationHelperStatusChangedNotification"
-let LocationHelperNewLocationNotification = "LocationHelperNewLocationNotification"
+let LocationHelperStatusChangedNotification = "LocationHelperStatusChanged"
+let LocationHelperNewLocationNotification = "LocationHelperNewLocation"
 let LocationHelperNewLocationNotificationUserInfoKey = "LocationHelperNewLocationNotificationUserInfoKey"
 
-enum LocationState: UInt {
-    case Start
-    case Stop
+enum LocationManagerState: UInt {
+    case On
+    case Off
 }
 
 class LocationHelper: NSObject {
     static let sharedInstance = LocationHelper()
     private var locationManager: CLLocationManager
-    var state: LocationState = .Stop
+    var state: LocationManagerState = .Off
     
     override init() {
         locationManager = CLLocationManager()
@@ -35,6 +35,7 @@ class LocationHelper: NSObject {
     func setupLocationManager() -> Void {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+      start()
     }
     
     func start() -> Void {
@@ -42,10 +43,10 @@ class LocationHelper: NSObject {
         switch authorizationStatus {
         case .NotDetermined:
             locationManager.requestWhenInUseAuthorization()
-            state = .Start
+            state = .On
             postStateChangeNotification()
         case .AuthorizedAlways, .AuthorizedWhenInUse:
-            state = .Start
+            state = .On
             postStateChangeNotification()
             locationManager.startUpdatingLocation()
         case .Denied:
@@ -56,7 +57,7 @@ class LocationHelper: NSObject {
     }
     
     func stop() -> Void {
-        state = .Stop
+        state = .Off
         postStateChangeNotification()
         
         locationManager.stopUpdatingLocation()
@@ -76,12 +77,12 @@ extension LocationHelper: CLLocationManagerDelegate {
     func locationManager(manager: CLLocationManager, didChangeAuthorizationStatus status: CLAuthorizationStatus) {
         switch (status) {
         case .AuthorizedAlways, .AuthorizedWhenInUse:
-            if (state == .Start) {
+            if (state == .On) {
                 locationManager.startUpdatingLocation()
             }
         case .Denied, .Restricted:
-            if (state == .Start) {
-                state = .Stop
+            if (state == .On) {
+                state = .Off
                 postStateChangeNotification()
                 AlertController.showWithTitle("Location error", message: "No location available", actionTitle: "OK")
             }
